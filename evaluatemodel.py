@@ -23,7 +23,7 @@ import numpy as np
 
 from dataobjects import HighDDataset
 from dataobjects.enums import HighDDatasetID
-from irlirlmodelvalidation import irlagenttools
+from irlmodelvalidation import irlagenttools
 from irlmodelvalidation.irlagent import IRLAgent
 from processing.encryptiontools import save_encrypted_pickle
 
