@@ -1,7 +1,28 @@
 # Human Model Validation
-This python package contains scripts needed to train IRL Driver models on HighD datasets. This code is accompanying the paper "A human factors approach to 
+This python module contains scripts needed to train IRL Driver models on HighD datasets. This code is accompanying the paper "A human factors approach to 
 validating driver models for interaction-aware automated vehicles - Siebinga, Zgonnikov & Abbink 2021".
 
+## Installation instructions
+This module cannot be used on its own, its should be used as a sub-module of the TraViA visualization software (click 
+[here](https://joss.theoj.org/papers/10.21105/joss.03607) for the paper, or [here](https://github.com/tud-hri/travia) for the repository). If you want to 
+use this module, first make sure you have a working version of TraViA. You can clone it directly from github using the following command, or fork it first 
+and clone your own version.
+
+```
+git clone https://github.com/tud-hri/travia.git
+```
+
+After cloning TraViA, you can navigate to the travia folder (`cd travia`) and clone this repository as a submodule. Use the following command to clone the 
+girhub version, or create a fork first and then clone your own fork.
+
+```
+git submodule add https://github.com/tud-hri/irlmodelvalidation.git
+```
+
+Instruction on how to get the data and how to work with TraViA can be found in the TraViA README file. See the instructions below for how to work with this 
+sub-module.
+
+## General overview 
 An object representing the IRL agent can be constructed using the `IRLAgent` class from `irlagent.py`. The script `evaluatemodel.py` uses an agent object
 to calculate the response of this agent in a specific dataset. The script `irlagenttools.py` contains helper functions for the IRL agent. Training a set of 
 agents can be done by running `train_irl.py`. This script uses `rewardgradient.py` to find the gradient and Hessian of the reward function.
