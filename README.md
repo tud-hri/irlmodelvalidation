@@ -1,6 +1,7 @@
 # Human Model Validation
-This python module contains scripts needed to train IRL Driver models on HighD datasets. This code is accompanying the paper "A human factors approach to 
-validating driver models for interaction-aware automated vehicles - Siebinga, Zgonnikov & Abbink 2021".
+This python module contains scripts needed to train IRL Driver models on HighD datasets. This code accompanies the paper "Validating human driver models for
+interaction-aware automated vehicle controllers: A human factors approach - Siebinga, Zgonnikov & Abbink 2021". A pre-print version of this paper is 
+available on [arXiv](https://arxiv.org/abs/2109.13077).
 
 ## Installation instructions
 This module cannot be used on its own, its should be used as a sub-module of the TraViA visualization software (click 
