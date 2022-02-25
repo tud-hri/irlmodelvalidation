@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import seaborn
 import tqdm
+import pingouin
 from scipy import stats
 
 from find_carfollowing_examples import get_examples_of_carfollowing
@@ -44,7 +45,7 @@ if __name__ == '__main__':
 
     ttc_difference = []
     time_difference = []
-    thw_difference = []
+    time_gap_difference = []
     ttc_difference_percentage = []
     phase_plane_errors_end_point_distance = []
     filtered_cf = []
@@ -104,7 +105,8 @@ if __name__ == '__main__':
             # the vehicle has multiple preceding vehicles, this results in jumps in the plot and thus it is filtered out
             continue
         demo_inverse_ttc = 1. / demo_ttc
-        demo_thw = demonstration_data.loc[
+        # the highD dataset includes a value for thw (time headway), but actually this is time gap not headway
+        demo_time_gap = demonstration_data.loc[
             (demonstration_data['frame'] >= agent_data['first_frame']) & (demonstration_data['frame'] <= demo_frame_index_of_lc), 'thw'].to_numpy()
 
         if agent_data['tactical_behavior'] == TacticalBehavior.LANE_CHANGE:
@@ -125,26 +127,26 @@ if __name__ == '__main__':
             plot_item = lane_change_plot
             plot_item.plot(agent_time_gap, agent_inverse_ttc, color='tab:blue', linewidth=0.7)
 
-            phase_plane_errors_end_point_distance.append(np.sqrt((agent_time_gap[-1] - demo_thw[-1]) ** 2 + (agent_ttc[-1] - demo_ttc[-1]) ** 2))
+            phase_plane_errors_end_point_distance.append(np.sqrt((agent_time_gap[-1] - demo_time_gap[-1]) ** 2 + (agent_ttc[-1] - demo_ttc[-1]) ** 2))
             all_lc_agent_end_points.append([agent_time_gap[-1], agent_inverse_ttc[-1]])
             all_lc_agent_start_points.append([agent_time_gap[0], agent_inverse_ttc[0]])
             ttc_difference.append(demo_ttc[-1] - agent_ttc[-1])
 
             time_difference.append(demo_frame_index_of_lc - (agent_data['first_frame'] + agent_frame_index_of_lc))
             ttc_difference_percentage.append((demo_ttc[-1] - agent_ttc[-1]) * 100 / demo_ttc[-1])
-            thw_difference.append(demo_thw[-1] - agent_time_gap[-1])
-            demo_plot.plot(demo_thw, demo_inverse_ttc, color='tab:blue', linewidth=0.7)
+            time_gap_difference.append(demo_time_gap[-1] - agent_time_gap[-1])
+            demo_plot.plot(demo_time_gap, demo_inverse_ttc, color='tab:blue', linewidth=0.7)
 
-            all_demo_end_points.append([demo_thw[-1], demo_inverse_ttc[-1]])
-            all_demo_start_points.append([demo_thw[0], demo_inverse_ttc[0]])
+            all_demo_end_points.append([demo_time_gap[-1], demo_inverse_ttc[-1]])
+            all_demo_start_points.append([demo_time_gap[0], demo_inverse_ttc[0]])
 
-            if np.linalg.norm(np.array([thw_difference[-1], ttc_difference[-1]])) < 0.5:
+            if np.linalg.norm(np.array([time_gap_difference[-1], ttc_difference[-1]])) < 0.5:
                 small_error_last_agent_line = small_error_plot.plot(agent_time_gap, agent_inverse_ttc, color='tab:blue', linewidth=0.7)
-                small_error_last_demo_line = small_error_plot.plot(demo_thw, demo_inverse_ttc, color='tab:orange', linewidth=0.7)
+                small_error_last_demo_line = small_error_plot.plot(demo_time_gap, demo_inverse_ttc, color='tab:orange', linewidth=0.7)
 
                 small_error_last_end = small_error_plot.plot(agent_time_gap[-1], agent_inverse_ttc[-1], color='k', marker='d', fillstyle='none', markersize=3.,
                                                              linestyle='')
-                small_error_plot.plot(demo_thw[-1], demo_inverse_ttc[-1], color='k', marker='d', fillstyle='none', markersize=3., linestyle='')
+                small_error_plot.plot(demo_time_gap[-1], demo_inverse_ttc[-1], color='k', marker='d', fillstyle='none', markersize=3., linestyle='')
                 small_error_last_start = small_error_plot.plot(agent_time_gap[0], agent_inverse_ttc[0], color='tab:orange', marker='o', fillstyle='none',
                                                                markersize=3.,
                                                                linestyle='')
@@ -174,7 +176,7 @@ if __name__ == '__main__':
 
     # calculate number of absolute ttc/time gap differences smaller then 1 second
     total_okeisch_lc = 0
-    for point in zip(abs(np.array(thw_difference)), abs(np.array(ttc_difference))):
+    for point in zip(abs(np.array(time_gap_difference)), abs(np.array(ttc_difference))):
         if np.linalg.norm(point) < .5:
             total_okeisch_lc += 1
 
@@ -236,26 +238,26 @@ if __name__ == '__main__':
     demo_violin_ttc_data['source'] = 'Human'
     demo_violin_ttc_data['label'] = 'Inverse TTC'
 
-    demo_violin_thw_data = pd.DataFrame(columns=['source', 'data_point', 'label'])
-    demo_violin_thw_data['data_point'] = all_demo_end_points[:, 0]
-    demo_violin_thw_data['source'] = 'Human'
-    demo_violin_thw_data['label'] = 'Time Gap'
+    demo_violin_time_gap_data = pd.DataFrame(columns=['source', 'data_point', 'label'])
+    demo_violin_time_gap_data['data_point'] = all_demo_end_points[:, 0]
+    demo_violin_time_gap_data['source'] = 'Human'
+    demo_violin_time_gap_data['label'] = 'Time Gap'
 
     agent_violin_ttc_data = pd.DataFrame(columns=['source', 'data_point', 'label'])
     agent_violin_ttc_data['data_point'] = all_lc_agent_end_points[:, 1]
     agent_violin_ttc_data['source'] = 'Model'
     agent_violin_ttc_data['label'] = 'Inverse TTC'
 
-    agent_violin_thw_data = pd.DataFrame(columns=['source', 'data_point', 'label'])
-    agent_violin_thw_data['data_point'] = all_lc_agent_end_points[:, 0]
-    agent_violin_thw_data['source'] = 'Model'
-    agent_violin_thw_data['label'] = 'Time Gap'
+    agent_violin_time_gap_data = pd.DataFrame(columns=['source', 'data_point', 'label'])
+    agent_violin_time_gap_data['data_point'] = all_lc_agent_end_points[:, 0]
+    agent_violin_time_gap_data['source'] = 'Model'
+    agent_violin_time_gap_data['label'] = 'Time Gap'
 
     data_for_violin_plot = pd.DataFrame(columns=['source', 'data_point', 'label'])
     data_for_violin_plot = data_for_violin_plot.append(demo_violin_ttc_data)
-    data_for_violin_plot = data_for_violin_plot.append(demo_violin_thw_data)
+    data_for_violin_plot = data_for_violin_plot.append(demo_violin_time_gap_data)
     data_for_violin_plot = data_for_violin_plot.append(agent_violin_ttc_data)
-    data_for_violin_plot = data_for_violin_plot.append(agent_violin_thw_data)
+    data_for_violin_plot = data_for_violin_plot.append(agent_violin_time_gap_data)
 
     plt.figure()
     seaborn.violinplot(data=data_for_violin_plot, y='label', x='data_point', hue='source', split=True, scale_hue=True, scale="area", inner="quartile", cut=0,
@@ -266,13 +268,18 @@ if __name__ == '__main__':
 
     demo_ttc_t_test = demo_violin_ttc_data['data_point'].to_numpy()
     agent_ttc_t_test = agent_violin_ttc_data['data_point'].to_numpy()
-    demo_thw_t_test = demo_violin_thw_data['data_point'].to_numpy()
-    agent_thw_t_test = agent_violin_thw_data['data_point'].to_numpy()
+    demo_time_gap_t_test = demo_violin_time_gap_data['data_point'].to_numpy()
+    agent_time_gap_t_test = agent_violin_time_gap_data['data_point'].to_numpy()
 
-    thw_t_test_results = stats.ttest_rel(demo_thw_t_test, agent_thw_t_test)
-    ttc_t_test_results = stats.ttest_rel(demo_ttc_t_test, agent_ttc_t_test)
+    with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+        print('t-test for time gap: ')
+        print(pingouin.ttest(demo_time_gap_t_test, agent_time_gap_t_test, paired=True))
+        print('t-test for inverse TTC: ')
+        print(pingouin.ttest(demo_ttc_t_test, agent_ttc_t_test, paired=True))
 
-    print('t-test for thw: statitic = %.3f, p-value = %.3e' % (thw_t_test_results.statistic, thw_t_test_results.pvalue))
-    print('t-test for ttc: statitic = %.3f, p-value = %.3e' % (ttc_t_test_results.statistic, ttc_t_test_results.pvalue))
+    print('inverse ttc human mean = %.2f' % np.mean(demo_ttc_t_test))
+    print('inverse ttc agent mean = %.2f' % np.mean(agent_ttc_t_test))
+    print('time gap human mean = %.2f' % np.mean(demo_time_gap_t_test))
+    print('time gap agent mean = %.2f' % np.mean(agent_time_gap_t_test))
 
     plt.show()
