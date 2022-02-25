@@ -16,14 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with irlmodelvalidation.  If not, see <https://www.gnu.org/licenses/>.
 """
+import os
+
 from dataobjects import HighDDataset
 from tactical_evaluation import load_encrypted_pickle
 
 data: HighDDataset
 
 
-def get_examples_of_carfollowing(axis_item, dataset_id=12, target_number_of_examples=3):
-    data = load_encrypted_pickle('data/%02d.pkl' % dataset_id)
+def get_examples_of_carfollowing(axis_item, dataset_id=1, target_number_of_examples=3, path_to_data_folder=os.path.join('data', 'HighD', 'data')):
+    data = load_encrypted_pickle(os.path.join(path_to_data_folder, '%02d.pkl' % dataset_id))
     count = 0
     colors = ['tab:green', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan', 'tab:red']
 
